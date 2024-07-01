@@ -33,6 +33,7 @@ public:
 
 			bool bIsPlayerCPU = false;
 			bool bIsRivalCPU = false;
+			bool bIsBusyCheckBypass = false;
 		}game;
 	}cfg;
 };

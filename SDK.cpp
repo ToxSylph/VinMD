@@ -14,6 +14,9 @@ namespace SDK
 	uintptr_t oGetDuelClientInstanceBase = 0x2CD0068;
 	std::vector<unsigned int> oGetDuelClientInstanceOffsets = { 0xb8, 0x0 };
 
+	uintptr_t oIsBusyCheckBoolBase = 0x2CD8278;
+	std::vector<unsigned int> oIsBusyCheckBoolOffsets = { 0xb8, 0x40 };
+
 	uintptr_t oTimeDeltaBase = 0x1C907D8;
 	std::vector<unsigned int> oTimeDeltaOffsets = { 0xfc };
 
@@ -22,7 +25,7 @@ namespace SDK
 	uintptr_t oPVP_DuelGetCardIDByUniqueID = 0x9A0810;
 	uintptr_t oTHREAD_DuelGetCardIDByUniqueID = 0x9B89C0;
 
-    uintptr_t oPVP_DuelInfoTimeLeft = 0x9A2F20;
+	uintptr_t oPVP_DuelInfoTimeLeft = 0x9A2F20;
 	uintptr_t oPVP_DuelInfoTimeTotal = 0x9A2FE0;
 
 	uintptr_t oSetPlayerType = 0x9B5500;
@@ -32,7 +35,11 @@ namespace SDK
 	EngineCreateFunc ohkEngineCreateFunc = nullptr;
 	EngineDestroyFunc ohkEngineDestroyFunc = nullptr;
 	uintptr_t oEngineCreate = 0x9890F0;
-	uintptr_t oEngineDestroy= 0x98E460;
+	uintptr_t oEngineDestroy = 0x98E460;
+
+	uintptr_t oEngineIsBusyCheckBypass = 0xE654;
+
+	uintptr_t oEngineApiUtilGetCardUniqueId = 0xB85320;
 
 
 	uintptr_t ResolveAddr(uintptr_t ptr, std::vector<unsigned int> offsets)
@@ -63,6 +70,22 @@ namespace SDK
 			if (match) return (begin + i);
 		}
 		return 0;
+	}
+
+	void HP(PBYTE destination, PBYTE source, SIZE_T size, BYTE* oldBytes)
+	{
+		DWORD oldProtection;
+		VirtualProtect(destination, size, PAGE_EXECUTE_READWRITE, &oldProtection);
+		memcpy(oldBytes, destination, size);
+		memcpy(destination, source, size);
+		VirtualProtect(destination, size, oldProtection, &oldProtection);
+	}
+
+	void Nop(PBYTE destination, SIZE_T size, BYTE* oldBytes)
+	{
+		PBYTE nop = new BYTE[size];
+		memset(nop, 0x90, size);
+		HP(destination, nop, size, oldBytes);
 	}
 
 
@@ -114,6 +137,20 @@ namespace SDK
 		return true;
 	}
 
+	bool SetIsBusyCheckBypass(bool value)
+	{
+		uintptr_t base = baseAddress + oIsBusyCheckBoolBase;
+
+		uintptr_t address = ResolveAddr(base, oIsBusyCheckBoolOffsets);
+
+		if (!address) return false;
+
+		*(bool*)address = value;
+
+		return true;
+
+	}
+
 	UINT PVP_DuelInfoTimeLeft()
 	{
 		PVP_DuelInfoTimeLeftFunc TimeLeft = (PVP_DuelInfoTimeLeftFunc)(SDK::baseAddress + oPVP_DuelInfoTimeLeft);
@@ -136,70 +173,6 @@ namespace SDK
 	{
 		*bIsInGame = false;
 		return ohkEngineDestroyFunc();
-	}
-
-
-	std::vector<int> GetCardsUniqueIds(bool myself, int index)
-	{
-		int PID = myself ? Myself() : Rival();
-		std::vector<int> uniqueIDs;
-
-		int maxSize = 0;
-
-		switch (index)
-		{
-		case 13: // Hand
-			maxSize = 10;
-			break;
-		case 14: // Extra Deck
-			maxSize = 15;
-			break;
-		case 15: // Deck
-			maxSize = 40;
-			break;
-		case 16: // GY
-			maxSize = 10;
-			break;
-		default:
-			maxSize = 1;
-			break;
-		}
-
-		PVP_DuelGetCardUniqueIDFunc PVP_DuelGetCardUniqueID = (PVP_DuelGetCardUniqueIDFunc)(baseAddress + oPVP_DuelGetCardUniqueID);
-
-		if (index < 13)
-		{
-			for (int i = 0; i < maxSize; i++)
-			{
-				int uniqueID = PVP_DuelGetCardUniqueID(PID, i, 0);
-				uniqueIDs.push_back(uniqueID);
-			}
-		}
-		else
-		{
-			for (int i = 0; i < maxSize; i++)
-			{
-				int uniqueID = PVP_DuelGetCardUniqueID(PID, index, i);
-				uniqueIDs.push_back(uniqueID);
-			}
-		}
-		return uniqueIDs;
-	}
-
-	unsigned int GetCardsIDsByUniqueIDs(int uniqueId, bool online)
-	{
-		DuelGetCardIDByUniqueIDFunc DuelGetCardIDByUniqueID = nullptr;
-		if (online)
-		{
-			DuelGetCardIDByUniqueID = (DuelGetCardIDByUniqueIDFunc)(baseAddress + oPVP_DuelGetCardIDByUniqueID);
-		}
-		else
-		{
-			DuelGetCardIDByUniqueID = (DuelGetCardIDByUniqueIDFunc)(baseAddress + oTHREAD_DuelGetCardIDByUniqueID);
-		}
-		if(!DuelGetCardIDByUniqueID) return 0;
-
-		return DuelGetCardIDByUniqueID(uniqueId);
 	}
 
 	void SetPlayerType(int player, int type)

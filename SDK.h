@@ -6,20 +6,6 @@
 
 namespace SDK
 {
-	static struct DuelClient
-	{
-		char pad_0x0000[0xE4]; //0x0000
-		int pvpErrorCounter; //0x00E4
-		bool pvpError; // 0xE8
-		bool pvpTimeout; // 0xE9
-		char pad_00EA[0x2]; //0xEA
-		float replayTimeMargin; // 0xEC
-		bool replayRealTime; //0xF0
-
-		char pad_00F1[0xE7]; // 0xF1
-		bool resultSending; //0x1D8
-		bool resultSended; // 0x1D9
-	};
 
 	typedef int(*GetIntegerNoParamsFunc)();
 
@@ -46,6 +32,9 @@ namespace SDK
 	extern uintptr_t oGetDuelClientInstanceBase;
 	extern std::vector<unsigned int> oGetDuelClientInstanceOffsets;
 
+	extern uintptr_t oIsBusyCheckBoolBase;
+	extern std::vector<unsigned int> oIsBusyCheckBoolOffsets;
+
 	extern uintptr_t oTimeDeltaBase;
 	extern std::vector<unsigned int> oTimeDeltaOffsets;
 
@@ -62,24 +51,28 @@ namespace SDK
 	extern uintptr_t oEngineCreate;
 	extern uintptr_t oEngineDestroy;
 
+	extern uintptr_t oEngineIsBusyCheckBypass;
+
+	typedef int(*EngineApiUtilGetCardUniqueId)(int, int, int);
+	extern uintptr_t oEngineApiUtilGetCardUniqueId;
+
 	uintptr_t ResolveAddr(uintptr_t ptr, std::vector<unsigned int> offsets);
 	uintptr_t Aobs(PCHAR pattern, PCHAR mask, uintptr_t begin, SIZE_T size);
-
+	void HP(PBYTE destination, PBYTE source, SIZE_T size, BYTE* oldBytes);
+	void Nop(PBYTE destination, SIZE_T size, BYTE* oldBytes);
 
 	int Myself();
 	int Rival();
 	bool DuelEndStep();
 	uintptr_t GetDuelClientInstance();
 	bool SetGameSpeed(float value);
+	bool SetIsBusyCheckBypass(bool value);
 
 	UINT PVP_DuelInfoTimeLeft();
 	UINT PVP_DuelInfoTimeTotal();
 
 	void hkEngineCreateFunc(int gamemode, bool isOnline);
 	void hkEngineDestroyFunc();
-
-	std::vector<int> GetCardsUniqueIds(bool myself, int index);
-	unsigned int GetCardsIDsByUniqueIDs(int uniqueId, bool online);
 
 	void SetPlayerType(int player, int type);
 }
