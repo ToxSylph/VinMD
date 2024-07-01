@@ -59,7 +59,6 @@ void Render2DBox(ImDrawList* drawList, const ImVec2& top, const ImVec2& bottom, 
 void UpdateGameSpeed(float value);
 void ForceQuitMatch();
 void SetPlayerType();
-void ToggleStallTime();
 
 FILE* file;
 bool running = false;
@@ -80,13 +79,8 @@ enum ConfigKeys
 	GameSpeed3Key = VK_F3, //0x44,
 	GameSpeed4Key = VK_F4, //0x46,
 
-	SetPlayerAsCPUKey = VK_F7,
-	StallTimeKey = VK_F8,
-
-
-
-
 	// SOME DEBUG KEYS
+	SetPlayerAsCPUKey = VK_F7,
 	ToggleGetDuelTimeInfoKey = VK_F6, //0x52,
 
 };
@@ -245,26 +239,6 @@ void SetPlayerType()
 	}
 }
 
-void ToggleStallTime()
-{
-	cfg->game.bIsBusyCheckBypass = !cfg->game.bIsBusyCheckBypass;
-	SDK::SetIsBusyCheckBypass(cfg->game.bIsBusyCheckBypass);
-
-
-	/*uintptr_t busyCheckAddr = SDK::baseAddress + SDK::oEngineIsBusyCheckBypass;
-	BYTE buffer[2];
-
-	if (cfg->game.bIsBusyCheckBypass)
-	{
-		SDK::Nop((PBYTE)busyCheckAddr, 2, buffer);
-	}
-	else
-	{
-		BYTE opc_jz[2] = { 0x74, 0x07 };
-		SDK::HP((PBYTE)busyCheckAddr, opc_jz, 2, buffer);
-	}*/
-}
-
 void Run()
 {
 	running = true;
@@ -315,10 +289,6 @@ void Run()
 			UpdateGameSpeed(cfg->client.CustomTimeScaleVal4);
 		}
 
-		if (GetAsyncKeyState(ConfigKeys::StallTimeKey) & 1)
-		{
-			ToggleStallTime();
-		}
 		Sleep(10);
 	}
 	Exit();
@@ -719,12 +689,6 @@ HRESULT presentHook(IDXGISwapChain* swapChain, UINT syncInterval, UINT flags)
 					else
 						ImGui::Text("Player As CPU (F7)");
 
-					if (ImGui::Button("3>"))
-					{
-						ToggleStallTime();
-					}
-					ImGui::SameLine();
-					ImGui::Text("Stall Time (F8)");
 				}
 				ImGui::EndChild();
 				ImGui::EndTabItem();

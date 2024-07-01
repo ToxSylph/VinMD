@@ -14,9 +14,6 @@ namespace SDK
 	uintptr_t oGetDuelClientInstanceBase = 0x2CD0068;
 	std::vector<unsigned int> oGetDuelClientInstanceOffsets = { 0xb8, 0x0 };
 
-	uintptr_t oIsBusyCheckBoolBase = 0x2CD8278;
-	std::vector<unsigned int> oIsBusyCheckBoolOffsets = { 0xb8, 0x40 };
-
 	uintptr_t oTimeDeltaBase = 0x1C907D8;
 	std::vector<unsigned int> oTimeDeltaOffsets = { 0xfc };
 
@@ -30,14 +27,10 @@ namespace SDK
 
 	uintptr_t oSetPlayerType = 0x9B5500;
 
-
-
 	EngineCreateFunc ohkEngineCreateFunc = nullptr;
 	EngineDestroyFunc ohkEngineDestroyFunc = nullptr;
 	uintptr_t oEngineCreate = 0x9890F0;
 	uintptr_t oEngineDestroy = 0x98E460;
-
-	uintptr_t oEngineIsBusyCheckBypass = 0xE654;
 
 	uintptr_t oEngineApiUtilGetCardUniqueId = 0xB85320;
 
@@ -135,20 +128,6 @@ namespace SDK
 		*(float*)address = value;
 
 		return true;
-	}
-
-	bool SetIsBusyCheckBypass(bool value)
-	{
-		uintptr_t base = baseAddress + oIsBusyCheckBoolBase;
-
-		uintptr_t address = ResolveAddr(base, oIsBusyCheckBoolOffsets);
-
-		if (!address) return false;
-
-		*(bool*)address = value;
-
-		return true;
-
 	}
 
 	UINT PVP_DuelInfoTimeLeft()

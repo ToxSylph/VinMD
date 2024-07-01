@@ -32,9 +32,6 @@ namespace SDK
 	extern uintptr_t oGetDuelClientInstanceBase;
 	extern std::vector<unsigned int> oGetDuelClientInstanceOffsets;
 
-	extern uintptr_t oIsBusyCheckBoolBase;
-	extern std::vector<unsigned int> oIsBusyCheckBoolOffsets;
-
 	extern uintptr_t oTimeDeltaBase;
 	extern std::vector<unsigned int> oTimeDeltaOffsets;
 
@@ -51,10 +48,6 @@ namespace SDK
 	extern uintptr_t oEngineCreate;
 	extern uintptr_t oEngineDestroy;
 
-	extern uintptr_t oEngineIsBusyCheckBypass;
-
-	typedef int(*EngineApiUtilGetCardUniqueId)(int, int, int);
-	extern uintptr_t oEngineApiUtilGetCardUniqueId;
 
 	uintptr_t ResolveAddr(uintptr_t ptr, std::vector<unsigned int> offsets);
 	uintptr_t Aobs(PCHAR pattern, PCHAR mask, uintptr_t begin, SIZE_T size);
@@ -66,7 +59,6 @@ namespace SDK
 	bool DuelEndStep();
 	uintptr_t GetDuelClientInstance();
 	bool SetGameSpeed(float value);
-	bool SetIsBusyCheckBypass(bool value);
 
 	UINT PVP_DuelInfoTimeLeft();
 	UINT PVP_DuelInfoTimeTotal();
